@@ -1,0 +1,14 @@
+services:
+  fritzplot:
+    build: .
+    container_name: fritzplot
+    ports:
+      - "3000:3000"
+    environment:
+      FRITZBOX_URL: ${FRITZBOX_URL:-http://192.168.178.1}
+      FRITZBOX_PASSWORD: ${FRITZBOX_PASSWORD}
+      FRITZBOX_USER: ${FRITZBOX_USER:-}
+      POLL_INTERVAL: ${POLL_INTERVAL:-10}
+      PORT: "3000"
+      HOST: "0.0.0.0"
+    restart: unless-stopped

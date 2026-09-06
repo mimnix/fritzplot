@@ -1,0 +1,86 @@
+# FritzPlot — mise task configuration
+#
+# All build, clean, and Docker operations are defined here as mise tasks.
+# Run any task with:  mise run <task>
+# List all tasks with: mise tasks
+
+[tools]
+node = "20"
+
+[env]
+# Default image name/tag used by the Docker tasks.
+FRITZPLOT_IMAGE = "fritzplot"
+FRITZPLOT_TAG = "latest"
+# Target platforms for multi-architecture builds.
+FRITZPLOT_PLATFORMS = "linux/amd64,linux/arm64"
+# Buildx builder used for multi-arch builds.
+FRITZPLOT_BUILDER = "fritzplot-builder"
+
+# ---------------------------------------------------------------------------
+# Build tasks
+# ---------------------------------------------------------------------------
+
+[tasks.build]
+description = "Build the full project (client + server)"
+run = "npm run build"
+depends = ["build:client", "build:server"]
+
+[tasks."build:client"]
+description = "Build the frontend (Vite)"
+run = "npm run build:client"
+
+[tasks."build:server"]
+description = "Build the backend (TypeScript)"
+run = "npm run build:server"
+
+[tasks.typecheck]
+description = "Type-check the project without emitting"
+run = "npm run typecheck"
+
+[tasks.test]
+description = "Run the unit test suite"
+run = "npm test"
+
+[tasks.dev]
+description = "Run the backend with hot reload (dev)"
+run = "npm run dev:server"
+
+[tasks."dev:client"]
+description = "Run the Vite dev server"
+run = "npm run dev:client"
+
+# ---------------------------------------------------------------------------
+# Clean task
+# ---------------------------------------------------------------------------
+
+[tasks.clean]
+description = "Remove build artifacts and node_modules"
+run = "rm -rf dist node_modules"
+
+# ---------------------------------------------------------------------------
+# Docker tasks
+# ---------------------------------------------------------------------------
+
+[tasks."docker:buildx:setup"]
+description = "Create and bootstrap the multi-arch buildx builder (with QEMU)"
+run = "docker buildx create --name $FRITZPLOT_BUILDER --driver docker-container --use 2>/dev/null || docker buildx use $FRITZPLOT_BUILDER; docker buildx inspect --bootstrap $FRITZPLOT_BUILDER"
+
+[tasks."docker:build"]
+description = "Build the Docker image (multi-arch: amd64 + arm64)"
+run = "docker buildx build --builder $FRITZPLOT_BUILDER --platform $FRITZPLOT_PLATFORMS -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG --load ."
+
+[tasks."docker:build:local"]
+description = "Build the Docker image for the current architecture only"
+run = "docker build -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG ."
+
+[tasks."docker:push"]
+description = "Build and push the multi-arch image to the registry"
+run = "docker buildx build --builder $FRITZPLOT_BUILDER --platform $FRITZPLOT_PLATFORMS -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG --push ."
+
+[tasks."docker:run"]
+description = "Run the container locally (requires FRITZBOX_URL and FRITZBOX_PASSWORD)"
+run = "docker run --rm -p 3000:3000 -e FRITZBOX_URL=$FRITZBOX_URL -e FRITZBOX_PASSWORD=$FRITZBOX_PASSWORD -e FRITZBOX_USER=$FRITZBOX_USER $FRITZPLOT_IMAGE:$FRITZPLOT_TAG"
+
+[tasks."docker:clean"]
+description = "Remove the local image and dangling build cache"
+run = "docker rmi $FRITZPLOT_IMAGE:$FRITZPLOT_TAG 2>/dev/null || true; docker builder prune -f"

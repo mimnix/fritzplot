@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FritzPlot — Mesh Topology</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <h1>FritzPlot</h1>
+        <span class="brand-sub">FRITZ! Mesh</span>
+      </div>
+      <div class="status">
+        <label class="layout-label" for="layout-select">Layout</label>
+        <select id="layout-select" class="layout-select">
+          <option value="cose" selected>Graph</option>
+          <option value="breadthfirst">Dendrogram</option>
+        </select>
+        <span id="status-dot" class="status-dot offline"></span>
+        <span id="status-text">Connecting…</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="graph-panel">
+        <div id="cy" class="graph"></div>
+        <div class="legend">
+          <span class="legend-item"><i class="swatch master"></i>Master</span>
+          <span class="legend-item"><i class="swatch slave"></i>Repeater</span>
+          <span class="legend-item"><i class="swatch client"></i>Client</span>
+          <span class="legend-item"><i class="swatch link"></i>Link</span>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <div class="panel-section">
+          <h2>Overview</h2>
+          <div class="stats">
+            <div class="stat"><span id="stat-nodes">–</span><label>Mesh nodes</label></div>
+            <div class="stat"><span id="stat-clients">–</span><label>Clients</label></div>
+            <div class="stat"><span id="stat-online">–</span><label>Online</label></div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h2>Details</h2>
+          <div id="details" class="details">
+            <p class="muted">Select a node or client to see details.</p>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
