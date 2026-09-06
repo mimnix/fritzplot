@@ -7,14 +7,10 @@
 [tools]
 node = "20"
 
-[env]
-# Default image name/tag used by the Docker tasks.
-FRITZPLOT_IMAGE = "fritzplot"
-FRITZPLOT_TAG = "latest"
-# Target platforms for multi-architecture builds.
-FRITZPLOT_PLATFORMS = "linux/amd64,linux/arm64"
-# Buildx builder used for multi-arch builds.
-FRITZPLOT_BUILDER = "fritzplot-builder"
+# NOTE: Docker task variables (FRITZPLOT_IMAGE, FRITZPLOT_TAG, etc.) are NOT
+# defined here. They use shell parameter expansion (${VAR:-default}) inside the
+# task commands so that values set in your shell are respected. If you define
+# them in a [env] block, mise would override your shell's inline variables.
 
 # ---------------------------------------------------------------------------
 # Build tasks
@@ -63,24 +59,24 @@ run = "rm -rf dist node_modules"
 
 [tasks."docker:buildx:setup"]
 description = "Create and bootstrap the multi-arch buildx builder (with QEMU)"
-run = "docker buildx create --name $FRITZPLOT_BUILDER --driver docker-container --use 2>/dev/null || docker buildx use $FRITZPLOT_BUILDER; docker buildx inspect --bootstrap $FRITZPLOT_BUILDER"
+run = "docker buildx create --name ${FRITZPLOT_BUILDER:-fritzplot-builder} --driver docker-container --use 2>/dev/null || docker buildx use ${FRITZPLOT_BUILDER:-fritzplot-builder}; docker buildx inspect --bootstrap ${FRITZPLOT_BUILDER:-fritzplot-builder}"
 
 [tasks."docker:build"]
-description = "Build the Docker image (multi-arch: amd64 + arm64)"
-run = "docker buildx build --builder $FRITZPLOT_BUILDER --platform $FRITZPLOT_PLATFORMS -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG --load ."
+description = "Build the Docker image for the current architecture (loads into local daemon)"
+run = "docker buildx build --builder ${FRITZPLOT_BUILDER:-fritzplot-builder} --platform linux/amd64 -t ${FRITZPLOT_IMAGE:-fritzplot}:${FRITZPLOT_TAG:-latest} --load ."
 
 [tasks."docker:build:local"]
 description = "Build the Docker image for the current architecture only"
-run = "docker build -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG ."
+run = "docker build -t ${FRITZPLOT_IMAGE:-fritzplot}:${FRITZPLOT_TAG:-latest} ."
 
 [tasks."docker:push"]
-description = "Build and push the multi-arch image to the registry"
-run = "docker buildx build --builder $FRITZPLOT_BUILDER --platform $FRITZPLOT_PLATFORMS -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG --push ."
+description = "Build and push the multi-arch image (amd64 + arm64) to the registry"
+run = "docker buildx build --builder ${FRITZPLOT_BUILDER:-fritzplot-builder} --platform ${FRITZPLOT_PLATFORMS:-linux/amd64,linux/arm64} -t ${FRITZPLOT_IMAGE:-fritzplot}:${FRITZPLOT_TAG:-latest} --push ."
 
 [tasks."docker:run"]
 description = "Run the container locally (requires FRITZBOX_URL, FRITZBOX_PASSWORD, APP_USER, APP_PASSWORD)"
-run = "docker run --rm -p 3000:3000 -e FRITZBOX_URL=$FRITZBOX_URL -e FRITZBOX_PASSWORD=$FRITZBOX_PASSWORD -e FRITZBOX_USER=$FRITZBOX_USER -e APP_USER=$APP_USER -e APP_PASSWORD=$APP_PASSWORD $FRITZPLOT_IMAGE:$FRITZPLOT_TAG"
+run = "docker run --rm -p 3000:3000 -e FRITZBOX_URL=$FRITZBOX_URL -e FRITZBOX_PASSWORD=$FRITZBOX_PASSWORD -e FRITZBOX_USER=$FRITZBOX_USER -e APP_USER=$APP_USER -e APP_PASSWORD=$APP_PASSWORD ${FRITZPLOT_IMAGE:-fritzplot}:${FRITZPLOT_TAG:-latest}"
 
 [tasks."docker:clean"]
 description = "Remove the local image and dangling build cache"
-run = "docker rmi $FRITZPLOT_IMAGE:$FRITZPLOT_TAG 2>/dev/null || true; docker builder prune -f"
+run = "docker rmi ${FRITZPLOT_IMAGE:-fritzplot}:${FRITZPLOT_TAG:-latest} 2>/dev/null || true; docker builder prune -f"
