@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fastify/cookie": "^9.4.0",
     "@fastify/static": "^7.0.4",
     "fastify": "^4.28.1"
   },

@@ -1,13 +1,17 @@
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
+import fastifyCookie from "@fastify/cookie";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadConfig } from "./config.js";
 import { MeshPoller } from "./poller.js";
+import { createToken, verifyToken, verifyCredentials } from "./auth.js";
 import type { SseEvent } from "../shared/types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const AUTH_COOKIE = "fritzplot_auth";
 
 /**
  * Resolve the built frontend directory. The compiled server entry lives at
@@ -27,6 +31,76 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const app = Fastify({ logger: true });
   const poller = new MeshPoller(config);
+
+  await app.register(fastifyCookie);
+
+  const authConfig = { username: config.appUser, password: config.appPassword };
+
+  // -------------------------------------------------------------------------
+  // Authentication
+  // -------------------------------------------------------------------------
+
+  // Login: validate credentials and set an auth cookie.
+  app.post("/api/login", async (req, reply) => {
+    const body = req.body as { username?: string; password?: string; remember?: boolean };
+    const username = body?.username ?? "";
+    const password = body?.password ?? "";
+    const remember = body?.remember === true;
+
+    if (!verifyCredentials(username, password, authConfig)) {
+      return reply.code(401).send({ error: "Invalid username or password" });
+    }
+
+    const token = createToken(authConfig, remember);
+    reply.setCookie(AUTH_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      // "Keep me signed in" → 6 months; otherwise a session cookie.
+      ...(remember ? { maxAge: 6 * 30 * 24 * 60 * 60 } : {}),
+    });
+    return { ok: true };
+  });
+
+  // Logout: clear the auth cookie.
+  app.post("/api/logout", async (_req, reply) => {
+    reply.clearCookie(AUTH_COOKIE, { path: "/" });
+    return { ok: true };
+  });
+
+  // Check whether the current request is authenticated.
+  app.get("/api/auth/check", async (req, reply) => {
+    const token = req.cookies[AUTH_COOKIE];
+    if (verifyToken(token, authConfig)) {
+      return { authenticated: true };
+    }
+    return reply.code(401).send({ authenticated: false });
+  });
+
+  // Protect all API/SSE routes and the frontend behind authentication.
+  app.addHook("onRequest", async (req, reply) => {
+    const url = req.url;
+    // Public endpoints: login page + its assets, and the auth/health APIs.
+    if (
+      url === "/api/login" ||
+      url === "/api/logout" ||
+      url === "/api/auth/check" ||
+      url === "/api/health" ||
+      url === "/login.html" ||
+      url.startsWith("/assets/")
+    ) {
+      return;
+    }
+
+    const token = req.cookies[AUTH_COOKIE];
+    if (!verifyToken(token, authConfig)) {
+      // For API/SSE requests, return 401. For page requests, redirect to login.
+      if (url.startsWith("/api/") || url.startsWith("/events")) {
+        return reply.code(401).send({ error: "Unauthorized" });
+      }
+      return reply.redirect("/login.html");
+    }
+  });
 
   // Serve the built frontend (dist/client) if present.
   const clientDir = resolveClientDir();

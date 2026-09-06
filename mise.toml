@@ -78,8 +78,8 @@ description = "Build and push the multi-arch image to the registry"
 run = "docker buildx build --builder $FRITZPLOT_BUILDER --platform $FRITZPLOT_PLATFORMS -t $FRITZPLOT_IMAGE:$FRITZPLOT_TAG --push ."
 
 [tasks."docker:run"]
-description = "Run the container locally (requires FRITZBOX_URL and FRITZBOX_PASSWORD)"
-run = "docker run --rm -p 3000:3000 -e FRITZBOX_URL=$FRITZBOX_URL -e FRITZBOX_PASSWORD=$FRITZBOX_PASSWORD -e FRITZBOX_USER=$FRITZBOX_USER $FRITZPLOT_IMAGE:$FRITZPLOT_TAG"
+description = "Run the container locally (requires FRITZBOX_URL, FRITZBOX_PASSWORD, APP_USER, APP_PASSWORD)"
+run = "docker run --rm -p 3000:3000 -e FRITZBOX_URL=$FRITZBOX_URL -e FRITZBOX_PASSWORD=$FRITZBOX_PASSWORD -e FRITZBOX_USER=$FRITZBOX_USER -e APP_USER=$APP_USER -e APP_PASSWORD=$APP_PASSWORD $FRITZPLOT_IMAGE:$FRITZPLOT_TAG"
 
 [tasks."docker:clean"]
 description = "Remove the local image and dangling build cache"

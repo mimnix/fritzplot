@@ -10,6 +10,9 @@ export interface AppConfig {
   pollIntervalMs: number;
   port: number;
   host: string;
+  /** Web app login credentials (admin). */
+  appUser: string;
+  appPassword: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -21,6 +24,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   if (!password) {
     throw new Error("FRITZBOX_PASSWORD environment variable is required");
+  }
+
+  const appUser = env.APP_USER;
+  const appPassword = env.APP_PASSWORD;
+  if (!appUser || !appPassword) {
+    throw new Error(
+      "APP_USER and APP_PASSWORD environment variables are required for authentication",
+    );
   }
 
   const pollSeconds = Number(env.POLL_INTERVAL ?? "10");
@@ -35,5 +46,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     pollIntervalMs,
     port: Number(env.PORT ?? "3000"),
     host: env.HOST ?? "0.0.0.0",
+    appUser,
+    appPassword,
   };
 }

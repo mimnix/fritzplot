@@ -295,6 +295,115 @@ body {
   color: var(--offline);
 }
 
+/* ---------------------------------------------------------------------------
+   Login screen
+   --------------------------------------------------------------------------- */
+
+.login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.login-brand {
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.login-brand h1 {
+  font-size: 1.5rem;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 28px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+.login-input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: var(--accent);
+}
+
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.login-remember input {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.login-button {
+  margin-top: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.login-button:hover {
+  opacity: 0.92;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+.login-error {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--offline);
+  font-size: 0.85rem;
+}
+
 @media (max-width: 800px) {
   .layout {
     grid-template-columns: 1fr;

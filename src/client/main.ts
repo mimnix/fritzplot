@@ -528,7 +528,24 @@ function connect(): void {
 
   source.onerror = () => {
     setStatus(false, "Connection lost — retrying…");
+    // If the session expired (401), redirect to the login page.
+    void checkAuthAndRedirect();
   };
+}
+
+/**
+ * Check whether the session is still valid. If not, redirect to the login
+ * page (e.g. after the auth cookie expired).
+ */
+async function checkAuthAndRedirect(): Promise<void> {
+  try {
+    const res = await fetch("/api/auth/check");
+    if (res.status === 401) {
+      window.location.replace("/login.html");
+    }
+  } catch {
+    // Network error; the SSE client will keep retrying.
+  }
 }
 
 setupLayoutSelector();

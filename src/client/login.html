@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FritzPlot — Sign in</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="login-body">
+    <div class="login-card">
+      <div class="brand login-brand">
+        <span class="brand-dot"></span>
+        <h1>FritzPlot</h1>
+      </div>
+      <p class="login-subtitle">Sign in to view your FRITZ! Mesh</p>
+
+      <form id="login-form" class="login-form">
+        <label class="login-label" for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          class="login-input"
+          autocomplete="username"
+          required
+          autofocus
+        />
+
+        <label class="login-label" for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          class="login-input"
+          autocomplete="current-password"
+          required
+        />
+
+        <label class="login-remember">
+          <input id="remember" name="remember" type="checkbox" />
+          <span>Keep me signed in</span>
+        </label>
+
+        <button type="submit" class="login-button">Sign in</button>
+
+        <p id="login-error" class="login-error" hidden></p>
+      </form>
+    </div>
+
+    <script type="module" src="./login.ts"></script>
+  </body>
+</html>
